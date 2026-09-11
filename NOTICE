@@ -1,0 +1,13 @@
+GPS Logger ESP32-C3
+Copyright (c) 2026 AmirY (GitHub: amir684)
+https://github.com/amir684/GPS_Logger_ESP32C3
+
+This product was designed and built by AmirY. Any redistribution or derivative work
+must keep this NOTICE file and give visible credit to the original author, as required
+by section 4(d) of the Apache License, Version 2.0.
+
+Third-party libraries (downloaded by PlatformIO, not included in this repository):
+- U8g2 by olikraus (BSD 2-Clause)
+- TinyGPSPlus by Mikal Hart (LGPL 2.1)
+- ArduinoJson by Benoit Blanchon (MIT)
+- Arduino core for ESP32 by Espressif Systems (LGPL 2.1)
