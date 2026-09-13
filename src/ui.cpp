@@ -50,6 +50,9 @@ enum Screen : uint8_t {
 
 int screen = ScrClock;
 bool dimmed = false;
+float backlightCurrent = 0;  // faded towards backlightTarget, both 0-255
+int backlightTarget = 0;
+uint32_t lastFadeMs = 0;
 bool showStats = false;
 bool redraw = true;
 bool testHold = false;  // console test pattern stays on screen until a key press
@@ -64,9 +67,35 @@ void writeBacklight(uint8_t brightness) {
   ledcWrite(kBacklightChannel, LCD_LED_ACTIVE_LOW ? 255 - brightness : brightness);
 }
 
-void updateBacklight() {
-  int pct = dimmed ? Settings::get(S_BL_IDLE) : Settings::get(S_BL_LEVEL);
-  writeBacklight(pct * 255 / 100);
+void setBacklightTarget(bool full) {
+  dimmed = !full;
+  backlightTarget = (full ? Settings::get(S_BL_LEVEL) : Settings::get(S_BL_IDLE)) * 255 / 100;
+}
+
+// Jump to the target without fading: at boot, after the console test, or while editing the brightness
+void snapBacklight() {
+  backlightCurrent = backlightTarget;
+  writeBacklight((uint8_t)lroundf(backlightCurrent));
+}
+
+void updateBacklightFade() {
+  uint32_t now = millis();
+  uint32_t elapsed = now - lastFadeMs;
+  lastFadeMs = now;
+  if (backlightCurrent == (float)backlightTarget) return;
+
+  uint32_t fadeMs = Settings::value(S_BL_FADE);
+  if (fadeMs == 0 || elapsed >= fadeMs) {
+    backlightCurrent = backlightTarget;
+  } else {
+    float step = 255.0f * elapsed / fadeMs;  // a full sweep takes the configured time
+    if (backlightCurrent < backlightTarget) {
+      backlightCurrent = std::min((float)backlightTarget, backlightCurrent + step);
+    } else {
+      backlightCurrent = std::max((float)backlightTarget, backlightCurrent - step);
+    }
+  }
+  writeBacklight((uint8_t)lroundf(backlightCurrent));
 }
 
 bool screenEnabled(int s) { return Settings::get(kScreenSettingFirst + s); }
@@ -565,10 +594,7 @@ void Ui::update() {
   } else if (key != Key::None) {
     // With the backlight fully off, the first press only wakes the screen
     bool wakeOnly = dimmed && Settings::get(S_BL_IDLE) == 0 && Settings::get(S_BL_LEVEL) > 0;
-    if (dimmed) {
-      dimmed = false;
-      updateBacklight();
-    }
+    if (dimmed) setBacklightTarget(true);
     testHold = false;
     lastCycleMs = now;
     if (!wakeOnly) {
@@ -582,10 +608,7 @@ void Ui::update() {
   } else {
     uint32_t idle = now - Input::lastActivityMs();
     uint32_t timeout = Settings::value(S_BL_TIMEOUT) * 1000UL;
-    if (!dimmed && timeout && idle >= timeout) {
-      dimmed = true;
-      updateBacklight();
-    }
+    if (!dimmed && timeout && idle >= timeout) setBacklightTarget(false);
     if (Menu::isOpen() && idle >= kMenuTimeoutMs) {
       Menu::close();
       redraw = true;
@@ -606,6 +629,8 @@ void Ui::update() {
     lowBatteryWarned = false;
   }
 
+  updateBacklightFade();
+
   if (testHold) return;
   bool holding = Input::pushHoldMs() >= kLongPressMs;  // animate the sleep countdown smoothly
   if (redraw || now - lastDrawMs >= (holding ? 60 : kDrawPeriodMs)) {
@@ -619,7 +644,8 @@ void Ui::applyDisplay() {
   lcd.setContrast(Settings::get(S_CONTRAST) * 4);
   lcd.setDisplayRotation(Settings::get(S_ROTATE) ? U8G2_R0 : U8G2_R2);
   lcd.sendF("c", Settings::get(S_INVERT) ? 0xA7 : 0xA6);  // ST7567 reverse display
-  updateBacklight();
+  setBacklightTarget(!dimmed);
+  snapBacklight();  // brightness edits should show immediately, not fade
   redraw = true;
 }
 
@@ -640,7 +666,8 @@ void Ui::showMessage(const char *title, const char *detail) {
 }
 
 void Ui::shutdown() {
-  writeBacklight(0);
+  backlightTarget = 0;
+  snapBacklight();
   lcd.setPowerSave(1);
 }
 
@@ -709,7 +736,8 @@ void Ui::backlightTest() {
   }
 
   ledcAttachPin(PIN_LCD_LED, kBacklightChannel);
-  updateBacklight();
+  setBacklightTarget(!dimmed);
+  snapBacklight();
   redraw = true;
   Serial.println("bltest: done");
 }

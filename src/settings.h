@@ -23,6 +23,7 @@ enum SettingId : uint8_t {
   S_BL_LEVEL,
   S_BL_TIMEOUT,
   S_BL_IDLE,
+  S_BL_FADE,
   S_ROTATE,
   S_INVERT,
   S_START_SCREEN,

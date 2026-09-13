@@ -222,6 +222,7 @@ All settings are stored in NVS and are available on the device menu, the web pag
 | | `bl_level` | Backlight | 100% | 0-100% |
 | | `bl_timeout` | Light timeout | 30 s | Never, 10 s … 5 min |
 | | `bl_idle` | Idle light | 0% | 0-50% |
+| | `bl_fade` | Fade time between active and idle | 1 s | Off, 0.2 s … 5 s |
 | | `rotate` / `invert` | Rotate 180 / Invert | OFF | |
 | | `start_scr` | Start screen | Clock | any screen |
 | | `autocycle` | Auto cycle | Off | 5 s … 1 min |

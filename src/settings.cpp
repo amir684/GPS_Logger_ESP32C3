@@ -14,6 +14,7 @@ const int32_t kLogIntervals[] = {1, 2, 5, 10, 15, 30, 60, 120, 300};
 const int32_t kSplitMinutes[] = {0, 5, 10, 30, 60, 120};
 const int32_t kBlTimeouts[] = {0, 10, 20, 30, 60, 120, 300};
 const int32_t kCycleSeconds[] = {0, 5, 10, 20, 30, 60};
+const int32_t kFadeMs[] = {0, 200, 500, 1000, 2000, 3000, 5000};
 const int32_t kGpsBauds[] = {4800, 9600, 19200, 38400, 57600, 115200};
 const int32_t kSleepMv[] = {0, 3000, 3100, 3200, 3300};
 const int32_t kTxPower[] = {8, 20, 34, 44, 52, 60, 68, 78};  // wifi_power_t, quarter dBm
@@ -61,6 +62,8 @@ const SettingDef kDefs[S_COUNT] = {
     makeChoice("bl_timeout", G_DISPLAY, "Light timeout", 3, "Never|10 s|20 s|30 s|1 min|2 min|5 min", kBlTimeouts,
                "Dim the backlight after this idle time"),
     makeInt("bl_idle", G_DISPLAY, "Idle light", 0, 0, 50, 5, 0, "%", "Brightness after the timeout (0 = off)"),
+    makeChoice("bl_fade", G_DISPLAY, "Fade time", 3, "Off|0.2 s|0.5 s|1 s|2 s|3 s|5 s", kFadeMs,
+               "How long the backlight takes to fade between the active and idle levels"),
     makeBool("rotate", G_DISPLAY, "Rotate 180", false, "Flip the picture"),
     makeBool("invert", G_DISPLAY, "Invert", false, "Light pixels on dark background"),
     makeChoice("start_scr", G_DISPLAY, "Start screen", 0,
