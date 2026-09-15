@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "app.h"
+#include "autolog.h"
 #include "battery.h"
 #include "gps.h"
 #include "logger.h"
@@ -254,7 +255,9 @@ void rowValue(const Row &r, char *out, size_t n) {
       break;
     case R_ACTION:
       if (r.ref == A_LOGGING) {
-        snprintf(out, n, "%s", !Settings::get(S_LOGGING) ? "OFF" : Logger::isFull() ? "FULL" : "ON");
+        snprintf(out, n, "%s",
+                 !Settings::get(S_LOGGING) ? (AutoLog::armed() ? "AUTO" : "OFF")
+                                           : Logger::isFull() ? "FULL" : "ON");
       } else if (r.ref == A_WIFI) {
         snprintf(out, n, "%s", Net::active() ? "ON" : "OFF");
       }

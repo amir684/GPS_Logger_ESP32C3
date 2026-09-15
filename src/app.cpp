@@ -4,6 +4,7 @@
 #include <esp_sleep.h>
 #include <esp_system.h>
 
+#include "autolog.h"
 #include "battery.h"
 #include "config.h"
 #include "gps.h"
@@ -115,6 +116,7 @@ void App::applySetting(int id) {
 
 void App::setLogging(bool on) {
   if (Settings::set(S_LOGGING, on)) applySetting(S_LOGGING);
+  AutoLog::noteManual(on);  // a manual choice wins over the movement detector
   Ui::toast(on ? "Logging ON" : "Logging OFF");
 }
 

@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "app.h"
+#include "autolog.h"
 #include "battery.h"
 #include "config.h"
 #include "gps.h"
@@ -167,6 +168,9 @@ void drawStatusBar(const char *title) {
     } else {
       lcd.drawCircle(x + 2, 4, 2);  // armed, waiting for GPS time
     }
+  } else if (AutoLog::armed()) {
+    x -= 8;
+    lcd.drawStr(x, 7, "A");  // waiting for movement
   }
   lcd.drawHLine(0, 9, 128);
 }

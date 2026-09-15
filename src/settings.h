@@ -18,6 +18,12 @@ enum SettingId : uint8_t {
   S_LOG_MINDIST,
   S_LOG_SPLIT,
   S_LOG_FULL,
+  S_AUTO_LOG,
+  S_AUTO_START,
+  S_AUTO_STARTT,
+  S_AUTO_STOP,
+  S_AUTO_STOPT,
+  S_AUTO_TRIP,
   // Display
   S_CONTRAST,
   S_BL_LEVEL,

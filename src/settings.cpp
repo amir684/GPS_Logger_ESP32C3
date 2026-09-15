@@ -12,6 +12,8 @@ constexpr uint32_t kSaveDelayMs = 1500;
 
 const int32_t kLogIntervals[] = {1, 2, 5, 10, 15, 30, 60, 120, 300};
 const int32_t kSplitMinutes[] = {0, 5, 10, 30, 60, 120};
+const int32_t kAutoStartDelays[] = {3, 5, 10, 15, 30};
+const int32_t kAutoStopDelays[] = {30, 60, 120, 300, 600, 900};
 const int32_t kBlTimeouts[] = {0, 10, 20, 30, 60, 120, 300};
 const int32_t kCycleSeconds[] = {0, 5, 10, 20, 30, 60};
 const int32_t kFadeMs[] = {0, 200, 500, 1000, 2000, 3000, 5000};
@@ -56,6 +58,16 @@ const SettingDef kDefs[S_COUNT] = {
                "Start a new session after a pause in logging"),
     makeChoice("log_full", G_LOGGING, "When full", 0, "Delete oldest|Stop logging", nullptr,
                "What to do when flash storage is full"),
+    makeBool("auto_log", G_LOGGING, "Auto logging", false, "Start and stop sessions by movement"),
+    makeInt("auto_start", G_LOGGING, "Start above", 8, 2, 50, 1, 0, "km/h", "Speed that starts a session"),
+    makeChoice("auto_startt", G_LOGGING, "Start after", 1, "3 s|5 s|10 s|15 s|30 s", kAutoStartDelays,
+               "Time above the start speed before logging begins"),
+    makeInt("auto_stop", G_LOGGING, "Stop below", 3, 0, 20, 1, 0, "km/h",
+            "Speed counted as standing still, always below the start speed"),
+    makeChoice("auto_stopt", G_LOGGING, "Stop after", 2, "30 s|1 min|2 min|5 min|10 min|15 min", kAutoStopDelays,
+               "Time standing still before the session closes"),
+    makeBool("auto_trip", G_LOGGING, "Reset trip on start", true,
+             "Clear the trip statistics when an automatic session starts"),
     // Display
     makeInt("contrast", G_DISPLAY, "Contrast", 30, 0, 63, 1, 0, "", "LCD electronic volume"),
     makeInt("bl_level", G_DISPLAY, "Backlight", 100, 0, 100, 5, 0, "%", "Active brightness"),

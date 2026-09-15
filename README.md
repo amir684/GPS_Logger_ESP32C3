@@ -218,6 +218,10 @@ All settings are stored in NVS and are available on the device menu, the web pag
 | | `log_mindist` | Min distance | 0 m (off) | 0-200 |
 | | `log_split` | Split after gap | 30 min | Off, 5 min … 2 h |
 | | `log_full` | When full | Delete oldest | Delete oldest, Stop logging |
+| | `auto_log` | Auto logging (start/stop by movement) | OFF | |
+| | `auto_start` / `auto_startt` | Start above / after | 8 km/h / 5 s | 2-50 km/h, 3 s … 30 s |
+| | `auto_stop` / `auto_stopt` | Stop below / after | 3 km/h / 2 min | 0-20 km/h, 30 s … 15 min |
+| | `auto_trip` | Reset trip on automatic start | ON | |
 | Display | `contrast` | Contrast | 30 | 0-63 |
 | | `bl_level` | Backlight | 100% | 0-100% |
 | | `bl_timeout` | Light timeout | 30 s | Never, 10 s … 5 min |

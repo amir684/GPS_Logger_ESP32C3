@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "app.h"
+#include "autolog.h"
 #include "battery.h"
 #include "config.h"
 #include "console.h"
@@ -124,6 +125,8 @@ void loop() {
     lastGpsTime = gpsTime;
     Trip::update();
   }
+
+  AutoLog::update();
 
   uint32_t now = millis();
   if (now - lastSampleMs >= Settings::value(S_LOG_INTERVAL) * 1000UL) {

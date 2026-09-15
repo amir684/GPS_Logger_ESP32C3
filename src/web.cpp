@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "app.h"
+#include "autolog.h"
 #include "battery.h"
 #include "export.h"
 #include "gps.h"
@@ -188,6 +189,9 @@ void handleStatus() {
   log["records"] = Logger::sessionRecords();
   log["sessions"] = Logger::fileCount();
   log["full"] = Logger::isFull();
+  log["auto"] = (bool)Settings::get(S_AUTO_LOG);
+  log["armed"] = AutoLog::armed();
+  log["stopIn"] = AutoLog::stopCountdownS();
   log["used"] = Logger::usedBytes();
   log["total"] = Logger::totalBytes();
 

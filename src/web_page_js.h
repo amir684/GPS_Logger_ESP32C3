@@ -215,8 +215,12 @@ function renderDashboard() {
   }
 
   const l = s.log;
-  $('#kLog').innerHTML = !l.on ? '<span class="muted">OFF</span>' : l.full ? '<span class="bad">FULL</span>' : '<span class="good">ON</span>';
-  setText('kLogFoot', l.on ? `every ${l.interval}s | ${l.records} pts${l.session ? ' | ' + l.session : ''}` : 'press Logging to start');
+  $('#kLog').innerHTML = !l.on ? (l.armed ? '<span class="warn">AUTO</span>' : '<span class="muted">OFF</span>')
+    : l.full ? '<span class="bad">FULL</span>' : '<span class="good">ON</span>';
+  const logFoot = l.on
+    ? `every ${l.interval}s | ${l.records} pts${l.session ? ' | ' + l.session : ''}${l.stopIn ? ` | auto stop in ${fmt.dur(l.stopIn)}` : ''}`
+    : l.armed ? 'auto: waiting for movement' : 'press Logging to start';
+  setText('kLogFoot', logFoot);
   setText('btnLogging', l.on ? 'Stop logging' : 'Start logging');
 
   const pct = l.total ? l.used * 100 / l.total : 0;
