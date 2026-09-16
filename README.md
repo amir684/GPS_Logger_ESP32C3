@@ -62,7 +62,7 @@ Captured from the real frame buffer with the `scr` console command:
 | Li-ion cell + TP4056 charger | Optional, for portable use |
 | 3.3 V LDO, ≥500 mA (ME6211, RT9080) | Not AMS1117 - its dropout is too high for a single cell |
 | 2× 100 kΩ + 100 nF | Battery voltage divider |
-| N-MOSFET (AO3400) or NPN (S8050) | Optional backlight driver, see [Backlight](#backlight) |
+| **N-MOSFET** (AO3400A) + 100 Ω + 100 kΩ | Backlight driver, see [Backlight](#backlight) |
 
 ### Wiring
 
@@ -70,7 +70,7 @@ Captured from the real frame buffer with the `scr` console command:
 
 | LCD | ESP32-C3 |
 |---|---|
-| LED | IO21 (pad **TXD**) |
+| LED | Drain of the AO3400A backlight driver, gate on IO21 (pad **TXD**), see [Backlight](#backlight) |
 | CS | IO10 |
 | RST | IO9 |
 | DC | IO5 |
@@ -122,14 +122,23 @@ All pins live in [`include/config.h`](include/config.h).
 
 ### Backlight
 
-On this panel the LED anode sits on 3.3 V and the `LED` wire is the cathode side, so the firmware drives it **active-low** (`LCD_LED_ACTIVE_LOW` in `config.h`). A GPIO cannot sink the full backlight current, so it is dim when driven directly. For full brightness put a transistor between the `LED` wire and GND (gate/base from IO21) and set `LCD_LED_ACTIVE_LOW = false`:
+On this panel the LED anode sits on 3.3 V and the `LED` wire is the cathode side. A GPIO cannot sink the
+full backlight current, so the wire goes through an N-MOSFET to GND and IO21 drives its gate with PWM:
 
 ```
-LCD LED wire --- Drain        AO3400
-IO21 --[100R]--- Gate
-        [100k] to GND
-                 Source --- GND
+LCD LED wire ---- Drain
+                        AO3400A
+IO21 --[100R]--+-- Gate
+               |
+             [100k]
+               |
+              GND ------- Source
 ```
+
+- The 100 Ω resistor limits the gate charge current on every PWM edge; the 100 kΩ keeps the backlight off
+  while the chip boots.
+- `LCD_LED_ACTIVE_LOW = false` in `config.h` matches this circuit. Without the transistor (LED wire straight
+  on IO21) set it to `true`; the light works but stays dim.
 
 ### GPS power switch
 
@@ -364,7 +373,6 @@ images/                 photos and screenshots
 
 ## 🔮 Roadmap
 
-- Backlight transistor for full brightness
 - Offline map tiles for the track view
 - Use the free `aux` fields in each record for extra sensor data
 
