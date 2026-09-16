@@ -22,6 +22,11 @@ constexpr int PIN_BAT_ADC = 0;  // divider ratio is the "bat_cal" setting
 // GPS NMEA output (baud rate is the "gps_baud" setting)
 constexpr int PIN_GPS_RX = 20;  // ESP RX <- GPS TX
 
-// I2C for future sensors; the pull-ups also hold strapping pins IO2/IO8 high at boot
-constexpr int PIN_I2C_SDA = 2;
-constexpr int PIN_I2C_SCL = 8;
+// GPS power switch: P-MOSFET high side on the 3V3 rail, gate on IO8 with a 100k pull-up.
+// LOW = GPS powered, HIGH or floating = GPS off. The module's backup cell stays connected,
+// so waking up is a hot start.
+constexpr int PIN_GPS_POWER = 8;
+constexpr bool GPS_POWER_ACTIVE_LOW = true;
+
+// IO2 is the only spare pin left. It is a strapping pin: whatever you connect there
+// must not pull it low while the chip boots.

@@ -57,6 +57,7 @@ enum SettingId : uint8_t {
   S_GPS_MAXHDOP,
   S_GPS_MOVING,
   S_GPS_ALTHYST,
+  S_GPS_SLEEP,
   // Battery
   S_BAT_CAL,
   S_BAT_LOW,

@@ -1,6 +1,7 @@
 #include "gps.h"
 
 #include <Arduino.h>
+#include <driver/gpio.h>
 #include <sys/time.h>
 
 #include "config.h"
@@ -12,6 +13,7 @@ constexpr uint32_t kResyncMs = 10 * 60 * 1000UL;
 
 TinyGPSPlus gps;
 bool uartStarted = false;
+bool powerOn = false;
 bool clockSet = false;
 uint32_t lastSyncMs = 0;
 
@@ -44,6 +46,7 @@ void syncClock() {
 }  // namespace
 
 void Gps::begin() {
+  setPower(true);
   Serial1.setRxBufferSize(1024);
   setBaud(Settings::value(S_GPS_BAUD));
 }
@@ -53,6 +56,15 @@ void Gps::setBaud(uint32_t baud) {
   Serial1.begin(baud, SERIAL_8N1, PIN_GPS_RX, -1);
   uartStarted = true;
 }
+
+void Gps::setPower(bool on) {
+  gpio_hold_dis((gpio_num_t)PIN_GPS_POWER);  // may still be held from deep sleep
+  pinMode(PIN_GPS_POWER, OUTPUT);
+  digitalWrite(PIN_GPS_POWER, GPS_POWER_ACTIVE_LOW ? !on : on);
+  powerOn = on;
+}
+
+bool Gps::powered() { return powerOn; }
 
 void Gps::update() {
   while (Serial1.available()) gps.encode(Serial1.read());

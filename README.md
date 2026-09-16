@@ -58,6 +58,7 @@ Captured from the real frame buffer with the `scr` console command:
 | **ST7567 128×64 LCD** (JLX12864 type, SPI) | Same panel as the STM32 mini console, driven with U8g2 |
 | **3-way jog switch** | Up / down / push, common to GND |
 | **ATGM336H GPS** (or any NMEA module) | 3.3 V, 9600 baud by default, only its TX line is used |
+| **P-MOSFET** (AO3401A, SI2301, DMG3415U) | Switches GPS power off during deep sleep |
 | Li-ion cell + TP4056 charger | Optional, for portable use |
 | 3.3 V LDO, ≥500 mA (ME6211, RT9080) | Not AMS1117 - its dropout is too high for a single cell |
 | 2× 100 kΩ + 100 nF | Battery voltage divider |
@@ -90,8 +91,9 @@ Captured from the real frame buffer with the `scr` console command:
 
 | GPS | ESP32-C3 |
 |---|---|
-| VCC / GND | 3V3 / GND |
-| TX | IO20 (pad **RXD**) |
+| VCC | drain of the P-MOSFET, see [GPS power switch](#gps-power-switch) |
+| GND | GND |
+| TX | IO20 (pad **RXD**), through a 1 kΩ series resistor |
 | RX | not connected |
 
 **Battery divider**
@@ -107,13 +109,15 @@ BAT+ --[100k]--+--[100k]-- GND
 | Function | ESP32-C3 |
 |---|---|
 | USB D- / D+ | IO18 / IO19 (native USB, used for flashing and the console) |
-| I2C SDA / SCL (future sensors) | IO2 / IO8 with 4.7 kΩ pull-ups to 3V3 |
+| GPS power switch | IO8 (gate of the P-MOSFET) |
+| Spare | IO2 - the only pin left |
 
 All pins live in [`include/config.h`](include/config.h).
 
 **Notes**
 - The module pads are labeled by UART name: **TXD = IO21**, **RXD = IO20**.
-- IO2, IO8 and IO9 are strapping pins. Pull-ups on the I2C lines keep IO2/IO8 high at boot; never pull IO9 low at power-up.
+- IO2, IO8 and IO9 are strapping pins: they must not be pulled low while the chip boots. The 100 kΩ pull-up
+  on the GPS switch keeps IO8 high, and IO9 only drives the display reset.
 - The ATGM336H keeps satellite data on its backup cell (VBAT), which gives ~1 s hot starts after power loss.
 
 ### Backlight
@@ -126,6 +130,30 @@ IO21 --[100R]--- Gate
         [100k] to GND
                  Source --- GND
 ```
+
+### GPS power switch
+
+The GPS is the biggest consumer (~25 mA, more with an active antenna), so its 3.3 V rail runs through a
+P-MOSFET that the firmware opens before deep sleep. The ground must stay connected - cutting it would push
+current back through the TX line into the ESP32.
+
+```
+3V3 ---- Source
+              Drain ---- GPS VCC
+IO8 --+-- Gate        AO3401A
+      |
+    [100k]
+      |
+     3V3
+
+GPS TX --[1k]-- IO20      (keeps the module from being back-powered while it is off)
+```
+
+- **IO8 LOW = GPS on, HIGH or floating = GPS off.** The 100 kΩ pull-up keeps it off while the chip boots,
+  which also keeps this strapping pin high, and the firmware powers the module up as its first action.
+- **Do not switch the module's backup cell (VBAT).** It keeps the RTC and satellite data alive, so waking
+  from sleep is a hot start of about a second instead of a ~35 s cold start.
+- Controlled by the **GPS off in sleep** setting (on by default).
 
 ---
 
@@ -240,6 +268,7 @@ All settings are stored in NVS and are available on the device menu, the web pag
 | | `gps_hdop` | Max HDOP for statistics | 4.0 | 1.0-10.0 |
 | | `gps_moving` | Moving above | 2.0 km/h | 0.5-10.0 |
 | | `gps_althyst` | Climb filter | 3 m | 1-20 |
+| | `gps_sleep` | Cut GPS power in deep sleep | ON | |
 | Battery | `bat_cal` | Divider ratio | 2.000 | 1.500-2.500 |
 | | `bat_low` | Low warning | 3.40 V | 3.00-3.80 |
 | | `bat_sleep` | Auto sleep | Off | 3.00-3.30 V |
@@ -336,9 +365,8 @@ images/                 photos and screenshots
 ## 🔮 Roadmap
 
 - Backlight transistor for full brightness
-- GPS power switching during sleep (hot start from the backup cell)
-- Environmental sensors on the I2C bus, logged into the `aux` fields
 - Offline map tiles for the track view
+- Use the free `aux` fields in each record for extra sensor data
 
 ---
 

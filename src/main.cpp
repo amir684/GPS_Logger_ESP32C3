@@ -99,6 +99,7 @@ void takeSample() {
 void setup() {
   Serial.begin(115200);
   Settings::begin();
+  Gps::setPower(true);  // before the splash screen, so the module starts searching right away
   setCpuFrequencyMhz(Settings::value(S_CPU_MHZ));
   Units::applyTimezone();
 

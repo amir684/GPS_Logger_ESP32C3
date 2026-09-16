@@ -110,6 +110,8 @@ const SettingDef kDefs[S_COUNT] = {
     makeInt("gps_hdop", G_GPS, "Max HDOP", 40, 10, 100, 5, 1, "", "Ignore worse fixes in trip statistics"),
     makeInt("gps_moving", G_GPS, "Moving above", 20, 5, 100, 5, 1, "km/h", "Slower counts as standing still"),
     makeInt("gps_althyst", G_GPS, "Climb filter", 3, 1, 20, 1, 0, "m", "Altitude noise ignored for climb/descent"),
+    makeBool("gps_sleep", G_GPS, "GPS off in sleep", true,
+             "Cut GPS power during deep sleep; the backup cell keeps a hot start"),
     // Battery
     makeInt("bat_cal", G_BATTERY, "Divider ratio", 2000, 1500, 2500, 5, 3, "", "(R1+R2)/R2, calibrate against a multimeter"),
     makeInt("bat_low", G_BATTERY, "Low warning", 340, 300, 380, 5, 2, "V", "Warn below this voltage"),

@@ -43,6 +43,10 @@ void enterDeepSleep() {
   pinMode(PIN_LCD_LED, OUTPUT);
   digitalWrite(PIN_LCD_LED, LCD_LED_ACTIVE_LOW ? HIGH : LOW);
   gpio_hold_en((gpio_num_t)PIN_LCD_LED);
+  if (Settings::get(S_GPS_SLEEP)) {
+    Gps::setPower(false);
+    gpio_hold_en((gpio_num_t)PIN_GPS_POWER);
+  }
   gpio_deep_sleep_hold_en();
 
   gpio_pullup_en((gpio_num_t)PIN_JOG_PUSH);
