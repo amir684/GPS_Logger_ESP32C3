@@ -593,6 +593,8 @@ void Ui::update() {
   Key key = Input::poll();
   uint32_t now = millis();  // after poll(), which stamps the last activity time
 
+  if (key != Key::None) App::cancelSleep();
+
   if (key == Key::SleepHold) {
     App::sleep(0);  // works even with the backlight off
   } else if (key != Key::None) {

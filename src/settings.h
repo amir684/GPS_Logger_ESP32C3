@@ -77,6 +77,7 @@ enum SettingId : uint8_t {
   // System
   S_DEV_NAME,
   S_CPU_MHZ,
+  S_SLEEP_IDLE,
   S_COUNT
 };
 

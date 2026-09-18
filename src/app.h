@@ -14,6 +14,7 @@ void eraseLogs();
 void factoryReset();  // restore default settings and restart
 void restart(uint32_t delayMs = 800);
 void sleep(uint32_t delayMs = 800);  // deep sleep, wake with the jog push button
+void cancelSleep();                  // a key press calls this off an idle-sleep warning
 void setWifi(bool on);
 
 const char *resetReason();

@@ -22,7 +22,7 @@ A pocket GPS logger built around the **ESP32-C3** with a 128×64 **ST7567** LCD,
 - 🌐 **Web app** (access point or home WiFi): live KPIs and charts, session browser with track map and speed/altitude profile, generated settings form with search and backup/restore, system info, **OTA firmware update**, **live LCD mirror + remote buttons**
 - 📶 **Captive portal** on the access point, **mDNS** (`http://gpslogger.local`) on the home network, optional web password, WiFi auto-off when idle
 - 📊 **Statistics everywhere**: distance with jitter filter, moving time, mean / max / standard deviation of speed, climb and descent with hysteresis, 98th-percentile color scale for tracks
-- 😴 **Deep sleep** from the menu, the web page, automatically on low battery, or by **holding the wheel for 3 seconds** - push the wheel to wake up
+- 😴 **Deep sleep** from the menu, the web page, by **holding the wheel for 3 seconds**, after an idle timeout, or automatically on low battery so the cell never runs flat - push the wheel to wake up
 - 🔧 **Serial console** for everything: settings, exports, screen dump, key injection, web self-test, hardware bring-up tools
 
 ---
@@ -280,7 +280,7 @@ All settings are stored in NVS and are available on the device menu, the web pag
 | | `gps_sleep` | Cut GPS power in deep sleep | ON | |
 | Battery | `bat_cal` | Divider ratio | 2.000 | 1.500-2.500 |
 | | `bat_low` | Low warning | 3.40 V | 3.00-3.80 |
-| | `bat_sleep` | Auto sleep | Off | 3.00-3.30 V |
+| | `bat_sleep` | Auto sleep below voltage | Off | 3.00-3.50 V |
 | | `bat_mah` / `bat_load` | Capacity / average current (runtime estimate) | 2000 mAh / 60 mA | |
 | WiFi | `wifi_mode` | WiFi mode | Off | Off, Access point, Home WiFi, AP + Home |
 | | `ap_ssid` / `ap_pass` | Access point name / password | GPS-LOGGER / 12345678 | |
@@ -291,6 +291,7 @@ All settings are stored in NVS and are available on the device menu, the web pag
 | | `web_pass` | Web password (user `admin`) | empty | |
 | System | `dev_name` | Device name | GPS Logger | |
 | | `cpu_mhz` | CPU speed | 80 MHz | 80, 160 MHz |
+| | `sleep_idle` | Sleep when idle | Off | 5 min … 2 h |
 
 ---
 

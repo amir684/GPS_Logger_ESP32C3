@@ -18,7 +18,8 @@ const int32_t kBlTimeouts[] = {0, 10, 20, 30, 60, 120, 300};
 const int32_t kCycleSeconds[] = {0, 5, 10, 20, 30, 60};
 const int32_t kFadeMs[] = {0, 200, 500, 1000, 2000, 3000, 5000};
 const int32_t kGpsBauds[] = {4800, 9600, 19200, 38400, 57600, 115200};
-const int32_t kSleepMv[] = {0, 3000, 3100, 3200, 3300};
+const int32_t kSleepMv[] = {0, 3000, 3100, 3200, 3300, 3400, 3500};
+const int32_t kIdleSleepMinutes[] = {0, 5, 10, 15, 30, 60, 120};
 const int32_t kTxPower[] = {8, 20, 34, 44, 52, 60, 68, 78};  // wifi_power_t, quarter dBm
 const int32_t kIdleMinutes[] = {0, 5, 10, 30, 60};
 const int32_t kCpuMhz[] = {80, 160};
@@ -115,8 +116,8 @@ const SettingDef kDefs[S_COUNT] = {
     // Battery
     makeInt("bat_cal", G_BATTERY, "Divider ratio", 2000, 1500, 2500, 5, 3, "", "(R1+R2)/R2, calibrate against a multimeter"),
     makeInt("bat_low", G_BATTERY, "Low warning", 340, 300, 380, 5, 2, "V", "Warn below this voltage"),
-    makeChoice("bat_sleep", G_BATTERY, "Auto sleep", 0, "Off|3.00 V|3.10 V|3.20 V|3.30 V", kSleepMv,
-               "Save logs and power off below this voltage"),
+    makeChoice("bat_sleep", G_BATTERY, "Auto sleep", 0, "Off|3.00 V|3.10 V|3.20 V|3.30 V|3.40 V|3.50 V", kSleepMv,
+               "Save the logs and power off below this voltage, before the cell is damaged"),
     makeInt("bat_mah", G_BATTERY, "Capacity", 2000, 100, 10000, 100, 0, "mAh", "Cell capacity for runtime estimate"),
     makeInt("bat_load", G_BATTERY, "Avg current", 60, 10, 400, 5, 0, "mA", "Assumed average draw for runtime estimate"),
     // WiFi
@@ -135,6 +136,8 @@ const SettingDef kDefs[S_COUNT] = {
     // System
     makeText("dev_name", G_SYSTEM, "Device name", "GPS Logger", 24, false, "Shown on the web page and in exports"),
     makeChoice("cpu_mhz", G_SYSTEM, "CPU speed", 0, "80 MHz|160 MHz", kCpuMhz, "80 MHz saves power"),
+    makeChoice("sleep_idle", G_SYSTEM, "Sleep when idle", 0, "Off|5 min|10 min|15 min|30 min|1 h|2 h",
+               kIdleSleepMinutes, "Power off after this long with no buttons, no web use and no movement"),
 };
 
 Preferences prefs;

@@ -8,20 +8,24 @@
 #include "battery.h"
 #include "config.h"
 #include "gps.h"
+#include "input.h"
 #include "logger.h"
 #include "net.h"
 #include "settings.h"
 #include "trip.h"
 #include "ui.h"
 #include "units.h"
+#include "web.h"
 
 namespace {
 
 constexpr uint32_t kAutoSleepGraceMs = 30000;  // let the battery filter settle after boot
+constexpr uint32_t kIdleSleepWarnMs = 10000;   // time to cancel an idle sleep with any key
 
 bool restartPending = false;
 uint32_t restartAtMs = 0;
 bool sleepPending = false;
+bool sleepCancelable = false;
 uint32_t sleepAtMs = 0;
 int lastWifiMode = WM_AP;
 float cachedTemp = NAN;
@@ -73,9 +77,32 @@ void App::loop() {
 
   int32_t sleepMv = Settings::value(S_BAT_SLEEP);
   if (sleepMv && !sleepPending && now > kAutoSleepGraceMs && Battery::present() && Battery::volts() * 1000 < sleepMv) {
-    Ui::toast("Battery empty");
+    Ui::toast("Battery low: sleeping");
     sleep(3000);
   }
+
+  // Idle sleep: only when the logger really is unused
+  uint32_t idleMs = Settings::value(S_SLEEP_IDLE) * 60000UL;
+  if (!idleMs || sleepPending || restartPending || now < idleMs) return;
+  bool moving = Settings::get(S_LOGGING) && Gps::hasFix() &&
+                Gps::raw().speed.kmph() >= Settings::real(S_GPS_MOVING);
+  bool waitingForMovement = Settings::get(S_AUTO_LOG);  // sleeping would break the detector
+  uint32_t lastRequest = Web::lastRequestMs();
+  bool webBusy = Net::clients() > 0 || (lastRequest && now - lastRequest < idleMs);
+  bool keysBusy = now - Input::lastActivityMs() < idleMs;
+  if (moving || waitingForMovement || webBusy || keysBusy) return;
+
+  sleepPending = true;
+  sleepCancelable = true;
+  sleepAtMs = now + kIdleSleepWarnMs;
+  Ui::toast("Idle: sleeping in 10s");
+}
+
+void App::cancelSleep() {
+  if (!sleepPending || !sleepCancelable) return;
+  sleepPending = false;
+  sleepCancelable = false;
+  Ui::toast("Sleep cancelled");
 }
 
 void App::applySetting(int id) {
@@ -152,6 +179,7 @@ void App::restart(uint32_t delayMs) {
 
 void App::sleep(uint32_t delayMs) {
   sleepPending = true;
+  sleepCancelable = false;
   sleepAtMs = millis() + delayMs;
 }
 
